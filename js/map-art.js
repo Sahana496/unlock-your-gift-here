@@ -311,38 +311,51 @@ MoM.buildMap = function (ink) {
     // ==== leg 0: the Tetons ====
     mkMem(({ labels, addAnimal }) => {
       labels.addChild(mkLabel('the Teton Range', 400, 1372, 38));
-      labels.addChild(mkLabel('Jenny Lake', 470, 1756, 30));
-      // Delta Lake: a tarn above the peaks, reached by a switchback
-      ink.addStroke(W([[470, 1668], [516, 1568], [452, 1478], [506, 1392], [446, 1330]], 2), { width: 2.0, alpha: 0.55 });
+      // Jenny Lake: west of the road, at the foot of the peaks
+      ink.addStroke(W([[268, 1478], [318, 1458], [376, 1466], [404, 1496], [392, 1540], [340, 1558], [288, 1548], [258, 1516], [268, 1478]], 4), { width: 3.6, taper: false });
+      ink.addStroke([[288, 1500], [382, 1492]], { width: 1.7, alpha: 0.45 });
+      ink.addStroke([[300, 1524], [370, 1520]], { width: 1.4, alpha: 0.35 });
+      labels.addChild(mkLabel('Jenny Lake', 330, 1572, 30));
+      // the visitor center: a small hut by the east shore
+      const vcx = 448, vcy = 1508;
+      ink.addStroke(W([[vcx - 16, vcy], [vcx + 16, vcy]], 1), { width: 2.2 });
+      ink.addStroke(W([[vcx - 14, vcy], [vcx - 14, vcy - 14], [vcx + 14, vcy - 14], [vcx + 14, vcy]], 1), { width: 2.0 });
+      ink.addStroke(W([[vcx - 18, vcy - 14], [vcx, vcy - 26], [vcx + 18, vcy - 14]], 1), { width: 2.0 });
+      ink.addStroke([[vcx - 3, vcy], [vcx - 3, vcy - 8], [vcx + 3, vcy - 8], [vcx + 3, vcy]], { width: 1.4, alpha: 0.7 });
+      labels.addChild(mkLabel('visitor center', vcx + 8, vcy + 8, 17));
+      // Delta Lake: the tarn high above Jenny, up a long switchback
+      ink.addStroke(W([[300, 1462], [338, 1408], [302, 1360], [352, 1318], [368, 1300]], 2), { width: 2.0, alpha: 0.55 });
       ink.addStroke(W([[340, 1250], [400, 1214], [480, 1222], [522, 1258], [500, 1306], [430, 1324], [364, 1306], [334, 1278], [340, 1250]], 4), { width: 3.8, taper: false });
       ink.addStroke([[368, 1262], [498, 1252]], { width: 1.8, alpha: 0.45 });
       ink.addStroke([[386, 1286], [478, 1282]], { width: 1.5, alpha: 0.35 });
       ink.addStroke(W([[468, 1220], [482, 1158], [470, 1100]], 2), { width: 1.8, alpha: 0.5 });
-      labels.addChild(mkLabel('Delta Lake', 428, 1348, 30));
-      // Snake River: south from the lake, looping through Oxbow Bend
-      ink.addStroke(W([[540, 1836], [680, 1816], [774, 1828], [842, 1794], [824, 1750], [762, 1744], [744, 1780], [806, 1792], [896, 1782], [1010, 1798], [1130, 1836]], 3), { width: 3.4 });
-      labels.addChild(mkLabel('Oxbow Bend', 820, 1860, 30));
-      // Schwabacher Landing: a braid with still-water ticks
-      ink.addStroke(W([[634, 1768], [664, 1660], [650, 1548], [692, 1456], [724, 1384]], 3), { width: 3.2 });
-      ink.addStroke(W([[660, 1766], [688, 1668], [676, 1556], [714, 1466]], 3), { width: 2.2, alpha: 0.55 });
-      for (let i = 0; i < 5; i++) {
-        ink.addStroke([[642 + i * 11, 1690 - i * 36], [672 + i * 11, 1688 - i * 36]], { width: 1.5, alpha: 0.45 });
+      labels.addChild(mkLabel('Delta Lake', 470, 1342, 30));
+      // the Snake, sliding south through the valley floor
+      ink.addStroke(W([[540, 1836], [700, 1808], [860, 1792], [1010, 1800], [1130, 1836]], 3), { width: 3.4 });
+      // Schwabacher Landing: east of the road, a braid with still-water ticks
+      ink.addStroke(W([[846, 1706], [876, 1628], [866, 1566], [898, 1502]], 3), { width: 3.2 });
+      ink.addStroke(W([[868, 1704], [896, 1634], [888, 1574], [916, 1516]], 3), { width: 2.2, alpha: 0.55 });
+      for (let i = 0; i < 4; i++) {
+        ink.addStroke([[852 + i * 12, 1656 - i * 34], [882 + i * 12, 1654 - i * 34]], { width: 1.5, alpha: 0.45 });
       }
-      labels.addChild(mkLabel('Schwabacher Landing', 700, 1358, 28));
-      // Signal Mountain: a broad lone dome with hachure slopes and a lookout on top
-      const smx = 960, smy = 1690;
-      ink.addStroke(W([[smx - 105, smy], [smx - 63, smy - 51], [smx - 15, smy - 72], [smx + 39, smy - 63], [smx + 84, smy - 30], [smx + 105, smy]], 2), { width: 3.4 });
+      labels.addChild(mkLabel('Schwabacher Landing', 942, 1730, 26));
+      // Signal Mountain: the lone dome just shy of the crossroads
+      const smx = 1150, smy = 1478;
+      ink.addStroke(W([[smx - 95, smy], [smx - 57, smy - 46], [smx - 13, smy - 65], [smx + 35, smy - 57], [smx + 76, smy - 27], [smx + 95, smy]], 2), { width: 3.4 });
       for (let i = 0; i < 8; i++) {
-        const hx = smx - 82 + i * 23;
-        const hy = smy - 8 - Math.sin((i / 7) * Math.PI) * 45;
-        ink.addStroke([[hx, hy], [hx + 10, hy + 24]], { width: 1.5, alpha: 0.5 });
+        const hx = smx - 74 + i * 21;
+        const hy = smy - 7 - Math.sin((i / 7) * Math.PI) * 40;
+        ink.addStroke([[hx, hy], [hx + 9, hy + 22]], { width: 1.5, alpha: 0.5 });
       }
-      ink.addStroke(W([[smx - 12, smy - 72], [smx - 9, smy - 94], [smx + 12, smy - 94], [smx + 9, smy - 72]], 1), { width: 2.0 });
-      ink.addStroke([[smx - 15, smy - 94], [smx + 15, smy - 94]], { width: 2.0 });
+      ink.addStroke(W([[smx - 11, smy - 65], [smx - 8, smy - 85], [smx + 11, smy - 85], [smx + 8, smy - 65]], 1), { width: 2.0 });
+      ink.addStroke([[smx - 14, smy - 85], [smx + 14, smy - 85]], { width: 2.0 });
       labels.addChild(mkLabel('Signal Mountain', smx, smy + 14, 26));
-      forest(230, 1480, 10, 110);
-      forest(1130, 1590, 10, 115);
-      addAnimal('deer', 880, 1560, { range: 40, speed: 0.3 });
+      // Oxbow Bend: the river's lazy loop, just past the crossroads
+      ink.addStroke(W([[1190, 1368], [1264, 1392], [1330, 1402], [1388, 1382], [1380, 1350], [1332, 1344], [1318, 1372], [1362, 1388], [1442, 1392], [1520, 1424]], 3), { width: 3.2 });
+      labels.addChild(mkLabel('Oxbow Bend', 1318, 1444, 28));
+      forest(230, 1650, 10, 110);
+      forest(660, 1420, 9, 100);
+      addAnimal('deer', 640, 1700, { range: 40, speed: 0.3 });
       addAnimal('marmot', 560, 1290, { range: 0, speed: 0.55, bob: 6 });
     });
 
