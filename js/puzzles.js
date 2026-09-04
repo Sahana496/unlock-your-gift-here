@@ -300,7 +300,6 @@ MoM.puzzles = (() => {
     const state = load().fieldexam || { done: [] };
     if (!Array.isArray(state.done)) state.done = [];
     let selected = FIELD_ITEMS.find((it) => !state.done.includes(it.id))?.id || FIELD_ITEMS[0].id;
-    const revealed = new Set([selected]);   // clicked photographs stay uncovered
 
     el.innerHTML = `
       <p class="pz-kicker">the steaming basin</p>
@@ -325,14 +324,13 @@ MoM.puzzles = (() => {
           <button class="fj-thumb ${it.media.length > 1 ? 'fj-multi' : ''} ${done ? 'is-done' : ''} ${selected === it.id ? 'is-sel' : ''}"
                   data-id="${it.id}" type="button">
             ${mediaTag(it, 'fj-img')}
-            ${done || revealed.has(it.id) ? '' : '<span class="fj-veil fj-cover"></span>'}
+            ${done || selected === it.id ? '' : '<span class="fj-veil fj-cover"></span>'}
             <span class="fj-tag">${done ? it.answer : it.basin.toLowerCase()}</span>
           </button>`;
       }).join('');
       grid.querySelectorAll('.fj-thumb').forEach((b) => {
         b.addEventListener('click', () => {
           selected = b.dataset.id;
-          revealed.add(selected);
           verdict.textContent = ''; verdict.className = 'fe-verdict';
           renderGrid(); renderDetail();
         });
