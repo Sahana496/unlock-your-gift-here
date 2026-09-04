@@ -518,7 +518,7 @@ window.MoM = window.MoM || {};
     if (snitch && !snitch.caught) {
       const [sx2, sy2] = [snitch.g.x, snitch.g.y];
       const [px, py] = worldToScreen(sx2, sy2);
-      if (Math.hypot(e.clientX - px, e.clientY - py) < 46) { catchSnitch(); return; }
+      if (Math.hypot(e.clientX - px, e.clientY - py) < 60) { catchSnitch(); return; }
     }
     // the active location responds, and so does any place already conquered
     let best = null, bestD = 90;
@@ -546,14 +546,20 @@ window.MoM = window.MoM || {};
     if (snitch || introActive) { scheduleSnitch(); return; }
     const g = new PIXI.Container();
     const ball = new PIXI.Graphics();
-    ball.beginFill(0xc9a227, 0.95); ball.drawCircle(0, 0, 5); ball.endFill();
-    ball.lineStyle(1, 0x8a6d1d, 0.8); ball.drawCircle(0, 0, 5);
+    ball.beginFill(0xc9a227, 0.95); ball.drawCircle(0, 0, 11); ball.endFill();
+    ball.lineStyle(1.6, 0x8a6d1d, 0.8); ball.drawCircle(0, 0, 11);
+    ball.lineStyle(1.2, 0x8a6d1d, 0.6);
+    ball.moveTo(-11, 0); ball.quadraticCurveTo(0, 4, 11, 0);
     const wingL = new PIXI.Graphics();
-    wingL.lineStyle(1.6, 0xb0985a, 0.85);
-    wingL.moveTo(-5, -2); wingL.quadraticCurveTo(-16, -10, -22, -4);
+    wingL.lineStyle(2.6, 0xb0985a, 0.9);
+    wingL.moveTo(-11, -4); wingL.quadraticCurveTo(-34, -22, -48, -9);
+    wingL.lineStyle(1.6, 0xb0985a, 0.6);
+    wingL.moveTo(-11, -1); wingL.quadraticCurveTo(-30, -12, -42, -3);
     const wingR = new PIXI.Graphics();
-    wingR.lineStyle(1.6, 0xb0985a, 0.85);
-    wingR.moveTo(5, -2); wingR.quadraticCurveTo(16, -10, 22, -4);
+    wingR.lineStyle(2.6, 0xb0985a, 0.9);
+    wingR.moveTo(11, -4); wingR.quadraticCurveTo(34, -22, 48, -9);
+    wingR.lineStyle(1.6, 0xb0985a, 0.6);
+    wingR.moveTo(11, -1); wingR.quadraticCurveTo(30, -12, 42, -3);
     g.addChild(wingL, ball, wingR);
     // cross the current view
     const half = (innerWidth / camera.zoom) * 0.55;
