@@ -488,6 +488,8 @@ window.MoM = window.MoM || {};
   }
   function activate(id) {
     activeLoc = id;
+    // the first place to wake also wakes the snitch
+    if (!snitchStarted) { snitchStarted = true; gsap.delayedCall(5, spawnSnitch); }
     clearPulse();
     const m2 = art.markers.getChildByName(id);
     if (!m2) return;
@@ -585,9 +587,9 @@ window.MoM = window.MoM || {};
     });
   }
   function scheduleSnitch() { gsap.delayedCall(150 + Math.random() * 120, spawnSnitch); }
+  let snitchStarted = false;
   MoM.debugSnitch = () => spawnSnitch();
   MoM.__snitch = () => snitch && { x: snitch.g.x, y: snitch.g.y, caught: snitch.caught, screen: worldToScreen(snitch.g.x, snitch.g.y) };
-  scheduleSnitch();
 
   // ---------- Old Faithful, faithful ----------
   let faithfulOn = false;
