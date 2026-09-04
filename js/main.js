@@ -477,10 +477,27 @@ window.MoM = window.MoM || {};
   // ---------- puzzle progression ----------
   const ORDER = ['connections', 'fieldexam', 'crossword', 'howler'];
   let activeLoc = null;
+  let pulsing = null;
+  function clearPulse() {
+    if (!pulsing) return;
+    gsap.killTweensOf(pulsing.scale);
+    gsap.killTweensOf(pulsing);
+    gsap.to(pulsing.scale, { x: 1, y: 1, duration: 0.6 });
+    pulsing.alpha = 0.9;
+    pulsing = null;
+  }
   function activate(id) {
     activeLoc = id;
+    clearPulse();
     const m2 = art.markers.getChildByName(id);
-    if (m2) gsap.to(m2, { alpha: 0.72, duration: 2.4, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    if (!m2) return;
+    // the place-name itself breathes: grows and settles, asking to be touched
+    const lbl = m2.children.find((ch) => ch instanceof PIXI.Text);
+    if (lbl) {
+      pulsing = lbl;
+      gsap.to(lbl.scale, { x: 1.22, y: 1.22, duration: 1.1, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+      gsap.to(lbl, { alpha: 1, duration: 1.1, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    }
   }
   app.view.addEventListener('pointerdown', (e) => {
     if (introActive) return;
@@ -653,6 +670,7 @@ window.MoM = window.MoM || {};
   }
 
   MoM.puzzles.onSolved = (id) => {
+    clearPulse();
     const m2 = art.markers.getChildByName(id);
     if (m2) { gsap.killTweensOf(m2); m2.alpha = 1; }
     if (id === 'fieldexam') revealBasins();
@@ -688,6 +706,7 @@ window.MoM = window.MoM || {};
   }
   app.view.addEventListener('click', () => wake(false));
   MoM.debugCam = (x, y, z) => { camera.x = x; camera.y = y; if (z) camera.zoom = z; };
+  MoM.app = app;
   MoM.debug = () => {
     const out = { activeLoc, cam: { x: camera.x, y: camera.y, z: camera.zoom }, introActive };
     out.anims = memAnims.map((a) => [Math.round(a.g.x * 10) / 10, Math.round(a.g.y * 10) / 10]);
