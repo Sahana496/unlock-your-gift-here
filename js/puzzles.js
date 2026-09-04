@@ -755,7 +755,7 @@ MoM.puzzles = (() => {
       </div>
       <p class="fe-verdict hw-status" id="hw-verdict"></p>
       <div class="hw-knobs">
-        <label>tuning <input type="range" id="hw-tune" min="1500" max="9500" value="2200" step="10"><output id="hw-tune-o">2200 Hz</output></label>
+        <label>tuning <input type="range" id="hw-tune" min="500" max="9500" value="2200" step="10"><output id="hw-tune-o">2200 Hz</output></label>
         <label>window <input type="range" id="hw-bw" min="300" max="4200" value="480" step="20"><output id="hw-bw-o">480 Hz</output></label>
         <label>notch I <input type="range" id="hw-n1" min="4700" max="8100" value="4700" step="5"><output id="hw-n1-o">4700 Hz</output></label>
         <label>notch II <input type="range" id="hw-n2" min="4700" max="8100" value="8100" step="5"><output id="hw-n2-o">8100 Hz</output></label>
@@ -907,7 +907,7 @@ MoM.puzzles = (() => {
     cv.addEventListener('click', (e) => {
       const f = cursorFreq(e);
       const r = cv.getBoundingClientRect();
-      const tol = Math.max(35, Math.round((FMAX * 6) / r.height));
+      const tol = Math.max(120, Math.round((FMAX * 10) / r.height));
       if (Math.abs(f - H.PLATFORM_F) > tol) return;
       verdict.className = 'fe-verdict fe-good';
       verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> A deliberately planted tone at 975 Hz, belonging to no letter. Nothing is unlocked \u2014 some doors exist purely to be found.';
@@ -992,6 +992,7 @@ MoM.puzzles = (() => {
     // the map listens for the moment he is truly tuned in
     let heldSince = 0, solvedRadio = false;
     let eggHeldSince = 0, eggFired = false;
+    let platformHeldSince = 0, platformFired = false;
     const eggEl = el.querySelector('#hw-egg');
     const listener = setInterval(() => {
       if (solvedRadio) return;
@@ -1005,6 +1006,17 @@ MoM.puzzles = (() => {
       const onStation = Math.abs(tune - 6400) < 160;
       const windowOK = bw >= 3100;
       const good = playing && onStation && windowOK && notchOK;
+      if (!platformFired) {
+        const onPlatform = playing && Math.abs(tune - H.PLATFORM_F) <= 60;
+        if (onPlatform) {
+          if (!platformHeldSince) platformHeldSince = Date.now();
+          if (Date.now() - platformHeldSince > 2000) {
+            platformFired = true;
+            verdict.className = 'fe-verdict fe-good';
+            verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> A deliberately planted tone at 975 Hz, belonging to no letter. Nothing is unlocked \u2014 some doors exist purely to be found.';
+          }
+        } else platformHeldSince = 0;
+      }
       if (!eggFired) {
         const onMicrowave = playing && Math.abs(tune - 2400) <= 40;
         if (onMicrowave) {
