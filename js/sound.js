@@ -246,54 +246,76 @@ MoM.sound = (() => {
   function bisonSnort() {
     if (!ac) return;
     const t = ac.currentTime;
-    const dur = 0.18;
-    const len = Math.floor(ac.sampleRate * dur);
-    const buf = ac.createBuffer(1, len, ac.sampleRate);
+    const dur = 0.5;
+    const sr = ac.sampleRate;
+    const len = Math.floor(sr * dur);
+    const buf = ac.createBuffer(1, len, sr);
     const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    // a wet fluttering exhale: noise shaped by a nostril-flutter tremolo, baked in
+    const flutter = 24 + Math.random() * 6;
+    for (let i = 0; i < len; i++) {
+      const x = i / len;
+      const env = Math.min(1, x / 0.04) * Math.pow(1 - x, 1.6);
+      const trem = 0.55 + 0.45 * Math.sin(2 * Math.PI * flutter * (i / sr) + Math.sin(i / sr * 9));
+      // low rumble underneath: a soft 52 Hz growl with a couple of harmonics, fading with the breath
+      const ph = 2 * Math.PI * 52 * (i / sr) * (1 - x * 0.18);
+      const rumble = (Math.sin(ph) * 0.6 + Math.sin(ph * 2) * 0.25 + Math.sin(ph * 3) * 0.1) * env * 0.5;
+      d[i] = ((Math.random() * 2 - 1) * env * trem * 0.9 + rumble);
+    }
     const src = ac.createBufferSource();
     src.buffer = buf;
     const f = ac.createBiquadFilter();
-    f.type = 'lowpass'; f.frequency.value = 300; f.Q.value = 1;
+    f.type = 'lowpass';
+    f.Q.value = 0.9;
+    f.frequency.setValueAtTime(420, t);
+    f.frequency.exponentialRampToValueAtTime(140, t + dur);
     const g = ac.createGain();
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.09, t + 0.015);
-    g.gain.linearRampToValueAtTime(0.001, t + 0.2);
+    g.gain.value = 0.16;
     src.connect(f); f.connect(g); g.connect(master);
     src.start(t); src.stop(t + dur + 0.02);
-
-    const o = ac.createOscillator();
-    o.type = 'sine'; o.frequency.value = 70;
-    const og = ac.createGain();
-    og.gain.setValueAtTime(0.05, t);
-    og.gain.linearRampToValueAtTime(0, t + 0.18);
-    o.connect(og); og.connect(master);
-    o.start(t); o.stop(t + 0.2);
   }
 
-  // bear huff: two breathy bandpassed puffs
   function bearHuff() {
     if (!ac) return;
     const t = ac.currentTime;
-    const puff = (start) => {
-      const dur = 0.12;
-      const len = Math.floor(ac.sampleRate * dur);
-      const buf = ac.createBuffer(1, len, ac.sampleRate);
+    const sr = ac.sampleRate;
+    const puff = (start, level) => {
+      const dur = 0.22;
+      const len = Math.floor(sr * dur);
+      const buf = ac.createBuffer(1, len, sr);
       const d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      for (let i = 0; i < len; i++) {
+        const x = i / len;
+        const env = Math.min(1, x / 0.09) * Math.pow(1 - x, 2.2);
+        d[i] = (Math.random() * 2 - 1) * env;
+      }
       const src = ac.createBufferSource();
       src.buffer = buf;
       const f = ac.createBiquadFilter();
-      f.type = 'bandpass'; f.frequency.value = 480; f.Q.value = 1.2;
+      f.type = 'bandpass';
+      f.Q.value = 0.7;
+      f.frequency.setValueAtTime(640, t + start);
+      f.frequency.exponentialRampToValueAtTime(380, t + start + dur);
+      const lp = ac.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 1100;
       const g = ac.createGain();
-      g.gain.setValueAtTime(0, t + start);
-      g.gain.linearRampToValueAtTime(0.06, t + start + 0.02);
-      g.gain.linearRampToValueAtTime(0, t + start + 0.14);
-      src.connect(f); f.connect(g); g.connect(master);
+      g.gain.value = 0.34 * level;
+      src.connect(f); f.connect(lp); lp.connect(g); g.connect(master);
       src.start(t + start); src.stop(t + start + dur + 0.02);
+      // the soft weight behind the breath
+      const o = ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(88, t + start);
+      o.frequency.exponentialRampToValueAtTime(62, t + start + 0.1);
+      const og = ac.createGain();
+      og.gain.setValueAtTime(0, t + start);
+      og.gain.linearRampToValueAtTime(0.05 * level, t + start + 0.02);
+      og.gain.linearRampToValueAtTime(0, t + start + 0.12);
+      o.connect(og); og.connect(master);
+      o.start(t + start); o.stop(t + start + 0.14);
     };
-    puff(0);
-    puff(0.24);
+    puff(0, 1);
+    puff(0.26 + Math.random() * 0.06, 0.75);
   }
 
   return { start, step, quill, hum, suspense, scribbleStart, scribbleStop, unfold, marmotWhistle, bisonSnort, bearHuff };
