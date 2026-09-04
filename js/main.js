@@ -724,7 +724,18 @@ window.MoM = window.MoM || {};
 
   function resumeProgress(animated) {
     const idx = ORDER.findIndex((id) => !MoM.puzzles.isSolved(id));
-    const cur = idx < 0 ? ORDER.length - 1 : idx;
+    if (idx < 0) {
+      // everything conquered: the whole country lies open, and the map signs itself again
+      MoM.LEGS.forEach((leg) => leg.pts.forEach(([x, y]) => fogReveal(x, y, 700)));
+      for (let k = 0; k < MoM.LEGS.length; k++) revealMemories(k, true);
+      revealBasins(true);
+      const t = MoM.LOCATIONS.find((l) => l.id === 'howler');
+      walker.x = t.x; walker.y = t.y;
+      camera.x = t.x; camera.y = t.y;
+      gsap.delayedCall(1.5, finale);
+      return;
+    }
+    const cur = idx;
     for (let k = 0; k < cur; k++) {
       MoM.LEGS[k].pts.forEach(([x, y]) => fogReveal(x, y, 700));
       revealMemories(k, true);

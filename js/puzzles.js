@@ -737,6 +737,7 @@ MoM.puzzles = (() => {
 
   // ---------- Howler: "The Sealed Letter" ----------
   function mountHowler(el) {
+    if (isSolved('howler')) { renderWish(el); return; }
     const H = MoM.hsynth;
     const FMAX = 10000;
     let ctx = null, source = null, analyser = null, nodes = null;
