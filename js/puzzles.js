@@ -33,7 +33,7 @@ MoM.puzzles = (() => {
     </div>`;
   document.body.appendChild(layer);
   const body = layer.querySelector('#puzzle-body');
-  layer.querySelector('#puzzle-close').addEventListener('click', close);
+  layer.querySelector('#puzzle-close').addEventListener('click', () => close());
   layer.addEventListener('click', (e) => { if (e.target === layer) close(); });
 
   const PRETEXT = {
@@ -118,6 +118,7 @@ MoM.puzzles = (() => {
   }
 
   function open(id, ox, oy) {
+    cancelClose();
     body.innerHTML = '';
     layer.hidden = false;
     const card = layer.querySelector('#puzzle-card');
@@ -144,18 +145,24 @@ MoM.puzzles = (() => {
     }
     setTimeout(() => card.classList.add('is-ready'), 2500);
   }
+  let closeTimers = [];
+  function cancelClose() {
+    closeTimers.forEach(clearTimeout);
+    closeTimers = [];
+    layer.classList.remove('is-closing-slow');
+  }
   function close(slow = false) {
-    if (slow) {
+    if (slow === true) {
       layer.classList.add('is-closing-slow');
-      setTimeout(() => {
+      closeTimers.push(setTimeout(() => {
         layer.classList.remove('is-open');
         layer.classList.remove('is-closing-slow');
-        setTimeout(() => { layer.hidden = true; body.innerHTML = ''; }, 450);
-      }, 2400);
+        closeTimers.push(setTimeout(() => { layer.hidden = true; body.innerHTML = ''; }, 450));
+      }, 2400));
       return;
     }
     layer.classList.remove('is-open');
-    setTimeout(() => { layer.hidden = true; body.innerHTML = ''; }, 450);
+    closeTimers.push(setTimeout(() => { layer.hidden = true; body.innerHTML = ''; }, 450));
   }
 
   // ---------- Connections: "Four paths. Sort them." ----------
