@@ -910,7 +910,7 @@ MoM.puzzles = (() => {
       const tol = Math.max(120, Math.round((FMAX * 10) / r.height));
       if (Math.abs(f - H.PLATFORM_F) > tol) return;
       verdict.className = 'fe-verdict fe-good';
-      verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> A deliberately planted tone at 975 Hz, belonging to no letter. Nothing is unlocked \u2014 some doors exist purely to be found.';
+      verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> Right where it has always been \u2014 hidden between the platforms.';
     });
 
     const knob = (id, out, apply, fmt = (v) => `${v} Hz`) => {
@@ -992,7 +992,7 @@ MoM.puzzles = (() => {
     // the map listens for the moment he is truly tuned in
     let heldSince = 0, solvedRadio = false;
     let eggHeldSince = 0, eggFired = false;
-    let platformHeldSince = 0, platformFired = false;
+    let platformFired = false;
     const eggEl = el.querySelector('#hw-egg');
     const listener = setInterval(() => {
       if (solvedRadio) return;
@@ -1007,15 +1007,12 @@ MoM.puzzles = (() => {
       const windowOK = bw >= 3100;
       const good = playing && onStation && windowOK && notchOK;
       if (!platformFired) {
-        const onPlatform = playing && Math.abs(tune - H.PLATFORM_F) <= 60;
-        if (onPlatform) {
-          if (!platformHeldSince) platformHeldSince = Date.now();
-          if (Date.now() - platformHeldSince > 2000) {
-            platformFired = true;
-            verdict.className = 'fe-verdict fe-good';
-            verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> A deliberately planted tone at 975 Hz, belonging to no letter. Nothing is unlocked \u2014 some doors exist purely to be found.';
-          }
-        } else platformHeldSince = 0;
+        const windowOnPlatform = playing && Math.abs(tune - H.PLATFORM_F) <= bw / 2;
+        if (windowOnPlatform) {
+          platformFired = true;
+          verdict.className = 'fe-verdict fe-good';
+          verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> Right where it has always been \u2014 hidden between the platforms.';
+        }
       }
       if (!eggFired) {
         const onMicrowave = playing && Math.abs(tune - 2400) <= 40;
