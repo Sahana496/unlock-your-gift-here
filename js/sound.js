@@ -135,17 +135,46 @@ MoM.sound = (() => {
     // the nib touching down: one tiny soft tick
     blip(900 + Math.random() * 300, 0.012, 0.014, 'lowpass');
   }
-  // sustained scratching while text writes itself
-  let scribbleTimer = null;
+  // sustained scratching while text writes itself: one pen dragging, not chatter
+  let scribble = null;
   function scribbleStart() {
-    if (scribbleTimer || !ac) return;
-    const s = () => {
-      blip(1900 + Math.random() * 2800, 0.04 + Math.random() * 0.06, 0.016 + Math.random() * 0.012, 'highpass');
-      scribbleTimer = setTimeout(s, 55 + Math.random() * 120);
-    };
-    s();
+    if (scribble || !ac) return;
+    const t = ac.currentTime;
+    // a two-second noise loop is plenty
+    const len = Math.floor(ac.sampleRate * 2);
+    const buf = ac.createBuffer(1, len, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    const f = ac.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 2400;
+    f.Q.value = 3.6;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.02, t + 0.12);
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t);
+    // the nib wanders: pitch drifts with each stroke, pressure rises and falls smoothly
+    const mod = setInterval(() => {
+      if (!ac) return;
+      const now = ac.currentTime;
+      f.frequency.setTargetAtTime(1900 + Math.random() * 1300, now, 0.07);
+      g.gain.setTargetAtTime(0.008 + Math.random() * 0.022, now, 0.06);
+    }, 110 + Math.random() * 60);
+    scribble = { src, g, mod };
   }
-  function scribbleStop() { clearTimeout(scribbleTimer); scribbleTimer = null; }
+  function scribbleStop() {
+    if (!scribble) return;
+    const { src, g, mod } = scribble;
+    scribble = null;
+    clearInterval(mod);
+    const now = ac.currentTime;
+    g.gain.cancelScheduledValues(now);
+    g.gain.setTargetAtTime(0, now, 0.08);
+    setTimeout(() => { try { src.stop(); } catch (e) {} }, 500);
+  }
   // low mysterious swell (used when the letter glows)
   function hum() {
     if (!ac) return;
