@@ -587,6 +587,20 @@ window.MoM = window.MoM || {};
     const g = snitch.g;
     if (MoM.sound && MoM.sound.quill) MoM.sound.quill();
     gsap.to(g.scale, { x: 1.5, y: 1.5, duration: 0.4, yoyo: true, repeat: 1 });
+    // the map keeps score
+    const cheer = new PIXI.Text('150 points to Gryffindor.', {
+      fontFamily: '"La Belle Aurore", cursive', fontSize: 64, fill: 0x8a6d1d,
+    });
+    cheer.anchor.set(0.5, 1);
+    cheer.position.set(g.x, g.y - 26);
+    cheer.alpha = 0;
+    cheer.rotation = -0.03;
+    world.addChild(cheer);
+    gsap.to(cheer, { alpha: 0.95, y: g.y - 66, duration: 1.4, ease: 'power2.out' });
+    gsap.to(cheer, {
+      alpha: 0, y: g.y - 96, duration: 2.0, delay: 2.6, ease: 'power1.in',
+      onComplete: () => cheer.destroy(),
+    });
     gsap.to(g, {
       alpha: 0, duration: 1.6, delay: 1.4,
       onComplete: () => { snitch.flap && snitch.flap.kill(); g.destroy(); snitch = null; scheduleSnitch(); },
