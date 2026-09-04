@@ -748,6 +748,7 @@ MoM.puzzles = (() => {
       </div>
       <div class="hw-scope-wrap">
         <canvas id="hw-scope" width="960" height="330"></canvas>
+        <p class="hw-whisper" id="hw-egg" style="font-style:italic;opacity:0;transition:opacity 1.2s;color:inherit;min-height:1.2em;"></p>
         <div class="hw-dial" id="hw-dial"></div>
         <div class="hw-notchline" id="hw-nl1"></div>
         <div class="hw-notchline" id="hw-nl2"></div>
@@ -962,15 +963,18 @@ MoM.puzzles = (() => {
       const b = +el.querySelector('#hw-n2').value;
       const onStation = Math.abs(tune - 6400) < 160;
       const onDecoy = DECOY_FREQS.some((f) => Math.abs(tune - f) < 200);
+      const onWhistle = [5900, 7100].some((f) => Math.abs(tune - f) < 200);
       const notchOK = (Math.abs(a - 5900) < 90 && Math.abs(b - 7100) < 90) ||
                       (Math.abs(a - 7100) < 90 && Math.abs(b - 5900) < 90);
       let hint;
       if (!playing) {
         hint = 'The Messrs. cannot advise a silent receiver. Press play.';
+      } else if (!onStation && onWhistle) {
+        hint = 'Mr. Wormtail knows this bright line well \u2014 a bare whistle, carrying nothing at all. Curious, though: such lines rarely travel alone. Consider what might live between a pair of them.';
       } else if (!onStation && onDecoy) {
         hint = 'Mr. Moony admires this station\u2019s persistence, but it was never given a song worth keeping. Keep turning the dial.';
       } else if (!onStation) {
-        hint = 'Mr. Moony hears only weather where you are parked. The stations live where the glass burns brightest \u2014 and only one of them was given a song.';
+        hint = 'Mr. Moony hears only weather where you are parked. A true station wears its light wide \u2014 a line dressed in shimmer, not a bare thread. And only one of them was given a song.';
       } else if (bw < 3100) {
         hint = 'Mr. Padfoot approves of the station, but notes that a narrow window starves a song. Open it until the whole thing fits through.';
       } else if (!notchOK) {
@@ -987,6 +991,8 @@ MoM.puzzles = (() => {
 
     // the map listens for the moment he is truly tuned in
     let heldSince = 0, solvedRadio = false;
+    let eggHeldSince = 0, eggFired = false;
+    const eggEl = el.querySelector('#hw-egg');
     const listener = setInterval(() => {
       if (solvedRadio) return;
       if (!document.contains(cv)) { clearInterval(listener); return; }
@@ -999,6 +1005,18 @@ MoM.puzzles = (() => {
       const onStation = Math.abs(tune - 6400) < 160;
       const windowOK = bw >= 3100;
       const good = playing && onStation && windowOK && notchOK;
+      if (!eggFired) {
+        const onMicrowave = playing && Math.abs(tune - 2400) <= 40;
+        if (onMicrowave) {
+          if (!eggHeldSince) eggHeldSince = Date.now();
+          if (Date.now() - eggHeldSince > 2000) {
+            eggFired = true;
+            eggEl.textContent = 'ah \u2014 someone\'s microwave, probably.';
+            eggEl.style.opacity = '1';
+            setTimeout(() => { eggEl.style.opacity = '0'; }, 5000);
+          }
+        } else eggHeldSince = 0;
+      }
       if (good) {
         if (!heldSince) heldSince = Date.now();
         if (Date.now() - heldSince > 2800) {

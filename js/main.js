@@ -499,8 +499,25 @@ window.MoM = window.MoM || {};
       gsap.to(lbl, { alpha: 1, duration: 1.1, yoyo: true, repeat: -1, ease: 'sine.inOut' });
     }
   }
+  const ANIMAL_VOICE = { marmot: 'marmotWhistle', bison: 'bisonSnort', bear: 'bearHuff' };
   app.view.addEventListener('pointerdown', (e) => {
     if (introActive) return;
+    // the creatures answer if you bother them
+    for (const an of memAnims) {
+      const [ax, ay] = worldToScreen(an.g.x, an.g.y);
+      if (Math.hypot(e.clientX - ax, e.clientY - ay) < 52) {
+        const fn = ANIMAL_VOICE[an.kind];
+        if (fn && MoM.sound && MoM.sound[fn]) MoM.sound[fn]();
+        gsap.fromTo(an.g, { alpha: 0.75 }, { alpha: 1, duration: 0.5 });
+        return;
+      }
+    }
+    // the snitch, if it is passing
+    if (snitch && !snitch.caught) {
+      const [sx2, sy2] = [snitch.g.x, snitch.g.y];
+      const [px, py] = worldToScreen(sx2, sy2);
+      if (Math.hypot(e.clientX - px, e.clientY - py) < 46) { catchSnitch(); return; }
+    }
     // the active location responds, and so does any place already conquered
     let best = null, bestD = 90;
     for (const l of MoM.LOCATIONS) {
@@ -520,6 +537,82 @@ window.MoM = window.MoM || {};
     }
   });
   const memAnims = [];
+
+  // ---------- a glint of gold, rarely ----------
+  let snitch = null;
+  function spawnSnitch() {
+    if (snitch || introActive) { scheduleSnitch(); return; }
+    const g = new PIXI.Container();
+    const ball = new PIXI.Graphics();
+    ball.beginFill(0xc9a227, 0.95); ball.drawCircle(0, 0, 5); ball.endFill();
+    ball.lineStyle(1, 0x8a6d1d, 0.8); ball.drawCircle(0, 0, 5);
+    const wingL = new PIXI.Graphics();
+    wingL.lineStyle(1.6, 0xb0985a, 0.85);
+    wingL.moveTo(-5, -2); wingL.quadraticCurveTo(-16, -10, -22, -4);
+    const wingR = new PIXI.Graphics();
+    wingR.lineStyle(1.6, 0xb0985a, 0.85);
+    wingR.moveTo(5, -2); wingR.quadraticCurveTo(16, -10, 22, -4);
+    g.addChild(wingL, ball, wingR);
+    // cross the current view
+    const half = (innerWidth / camera.zoom) * 0.55;
+    const x0 = camera.x - half, x1 = camera.x + half;
+    const y0 = camera.y + (Math.random() - 0.5) * (innerHeight / camera.zoom) * 0.4;
+    g.position.set(x0, y0);
+    g.alpha = 0;
+    world.addChild(g);
+    snitch = { g, wingL, wingR, caught: false };
+    const flap = gsap.to([wingL.scale, wingR.scale], { y: 0.35, duration: 0.06, yoyo: true, repeat: -1 });
+    gsap.to(g, { alpha: 1, duration: 0.5 });
+    const fly = gsap.to(g, {
+      x: x1, duration: 4.5, ease: 'none',
+      onUpdate: () => { g.y = y0 + Math.sin(g.x * 0.02) * 26; },
+      onComplete: () => {
+        gsap.to(g, { alpha: 0, duration: 0.5, onComplete: () => { flap.kill(); g.destroy(); snitch = null; scheduleSnitch(); } });
+      },
+    });
+    snitch.fly = fly; snitch.flap = flap;
+  }
+  function catchSnitch() {
+    if (!snitch || snitch.caught) return;
+    snitch.caught = true;
+    snitch.fly && snitch.fly.kill();
+    const g = snitch.g;
+    if (MoM.sound && MoM.sound.quill) MoM.sound.quill();
+    gsap.to(g.scale, { x: 1.5, y: 1.5, duration: 0.4, yoyo: true, repeat: 1 });
+    gsap.to(g, {
+      alpha: 0, duration: 1.6, delay: 1.4,
+      onComplete: () => { snitch.flap && snitch.flap.kill(); g.destroy(); snitch = null; scheduleSnitch(); },
+    });
+  }
+  function scheduleSnitch() { gsap.delayedCall(150 + Math.random() * 120, spawnSnitch); }
+  MoM.debugSnitch = () => spawnSnitch();
+  MoM.__snitch = () => snitch && { x: snitch.g.x, y: snitch.g.y, caught: snitch.caught, screen: worldToScreen(snitch.g.x, snitch.g.y) };
+  scheduleSnitch();
+
+  // ---------- Old Faithful, faithful ----------
+  let faithfulOn = false;
+  function eruption() {
+    if (!faithfulOn) return;
+    const gx = 2030, gy = 690;
+    const jet = new PIXI.Graphics();
+    world.addChild(jet);
+    const p = { h: 0, a: 0.85 };
+    const draw = () => {
+      jet.clear();
+      jet.lineStyle(2.4, 0x6a5638, p.a * 0.8);
+      jet.moveTo(gx - 3, gy); jet.lineTo(gx - 6, gy - p.h);
+      jet.moveTo(gx + 3, gy); jet.lineTo(gx + 6, gy - p.h * 0.94);
+      jet.lineStyle(1.4, 0x8a734f, p.a * 0.5);
+      for (let i = 0; i < 3; i++) {
+        const dx = (i - 1) * 12;
+        jet.moveTo(gx + dx * 0.4, gy - p.h * 0.9);
+        jet.lineTo(gx + dx * 1.8, gy - p.h * 0.55);
+      }
+    };
+    gsap.to(p, { h: 150, duration: 2.2, ease: 'power2.out', onUpdate: draw });
+    gsap.to(p, { a: 0, duration: 2.4, delay: 2.6, onUpdate: draw, onComplete: () => jet.destroy() });
+    gsap.delayedCall(88 + Math.random() * 10, eruption);
+  }
   // the pen only scratches while ink is actually moving; overlapping writers share it
   let scribbleUsers = 0;
   function penDown() { if (++scribbleUsers === 1 && MoM.sound && MoM.sound.scribbleStart) MoM.sound.scribbleStart(); }
@@ -579,7 +672,13 @@ window.MoM = window.MoM || {};
     });
   }
 
+  function startFaithful() {
+    if (faithfulOn) return;
+    faithfulOn = true;
+    gsap.delayedCall(20, eruption);
+  }
   function revealBasins(instant = false) {
+    startFaithful();
     if (!art.basinStrokes || art.basinStrokes.length === 0) return;
     if (instant) {
       art.basinStrokes.forEach((i) => ink.paint(i, 1));

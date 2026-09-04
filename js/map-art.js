@@ -295,7 +295,7 @@ MoM.buildMap = function (ink) {
         cont.scale.set(w / tw);
         cont.alpha = 0;
         root.addChild(cont);
-        animals.push({ g: cont, legF: legF2, legR: legR2, x, y,
+        animals.push({ g: cont, legF: legF2, legR: legR2, x, y, kind,
           sx: w / tw, face: FACE[kind] || 1,
           range: opts.range ?? 26, speed: opts.speed ?? 0.35,
           bob: opts.bob ?? 1.5, phase: Math.random() * 6.28 });

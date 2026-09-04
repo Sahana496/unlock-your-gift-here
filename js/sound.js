@@ -222,5 +222,79 @@ MoM.sound = (() => {
     }
   }
 
-  return { start, step, quill, hum, suspense, scribbleStart, scribbleStop, unfold };
+  // marmot alarm call: two sharp descending whistles
+  function marmotWhistle() {
+    if (!ac) return;
+    const t = ac.currentTime;
+    const whistle = (start, f0, f1, dur) => {
+      const o = ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f0, t + start);
+      o.frequency.linearRampToValueAtTime(f1, t + start + dur);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0, t + start);
+      g.gain.linearRampToValueAtTime(0.05, t + start + 0.008);
+      g.gain.linearRampToValueAtTime(0, t + start + 0.15);
+      o.connect(g); g.connect(master);
+      o.start(t + start); o.stop(t + start + 0.16);
+    };
+    whistle(0, 2900, 2500, 0.13);
+    whistle(0.22, 2750, 2400, 0.13);
+  }
+
+  // bison snort: wet low rumble of noise plus a chest-tone sine
+  function bisonSnort() {
+    if (!ac) return;
+    const t = ac.currentTime;
+    const dur = 0.18;
+    const len = Math.floor(ac.sampleRate * dur);
+    const buf = ac.createBuffer(1, len, ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    const f = ac.createBiquadFilter();
+    f.type = 'lowpass'; f.frequency.value = 300; f.Q.value = 1;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.09, t + 0.015);
+    g.gain.linearRampToValueAtTime(0.001, t + 0.2);
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t); src.stop(t + dur + 0.02);
+
+    const o = ac.createOscillator();
+    o.type = 'sine'; o.frequency.value = 70;
+    const og = ac.createGain();
+    og.gain.setValueAtTime(0.05, t);
+    og.gain.linearRampToValueAtTime(0, t + 0.18);
+    o.connect(og); og.connect(master);
+    o.start(t); o.stop(t + 0.2);
+  }
+
+  // bear huff: two breathy bandpassed puffs
+  function bearHuff() {
+    if (!ac) return;
+    const t = ac.currentTime;
+    const puff = (start) => {
+      const dur = 0.12;
+      const len = Math.floor(ac.sampleRate * dur);
+      const buf = ac.createBuffer(1, len, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const src = ac.createBufferSource();
+      src.buffer = buf;
+      const f = ac.createBiquadFilter();
+      f.type = 'bandpass'; f.frequency.value = 480; f.Q.value = 1.2;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0, t + start);
+      g.gain.linearRampToValueAtTime(0.06, t + start + 0.02);
+      g.gain.linearRampToValueAtTime(0, t + start + 0.14);
+      src.connect(f); f.connect(g); g.connect(master);
+      src.start(t + start); src.stop(t + start + dur + 0.02);
+    };
+    puff(0);
+    puff(0.24);
+  }
+
+  return { start, step, quill, hum, suspense, scribbleStart, scribbleStop, unfold, marmotWhistle, bisonSnort, bearHuff };
 })();
