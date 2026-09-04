@@ -6,7 +6,6 @@
 window.MoM = window.MoM || {};
 
 (async () => {
-  document.title = 'boot:start';
   const W = MoM.WORLD.w, H = MoM.WORLD.h;
   const colW = W / 3;                      // legacy (creases)
   const CX = W / 2;
@@ -29,14 +28,12 @@ window.MoM = window.MoM || {};
       document.fonts.load('22px "La Belle Aurore"'),
     ]), 4500);
   } catch { /* fallbacks */ }
-  document.title = 'boot:assets';
 
   const app = new PIXI.Application({
     resizeTo: window, antialias: true, backgroundColor: 0x0d0a06,
     resolution: Math.min(window.devicePixelRatio || 1, 2), autoDensity: true,
   });
   document.querySelector('#game').appendChild(app.view);
-  document.title = 'boot:canvas';
 
   const world = new PIXI.Container();
   app.stage.addChild(world);
