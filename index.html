@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Map of Misadventures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=La+Belle+Aurore&family=MedievalSharp&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #0d0a06; }
+  #game { position: fixed; inset: 0; }
+  canvas { display: block; }
+
+  /* transparent ink-writing overlay, positioned over the Pixi prop each frame */
+  #inkwrite {
+    position: fixed; z-index: 10; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2.2vh; text-align: center;
+  }
+  .pline {
+    font-family: 'La Belle Aurore', cursive;
+    font-size: var(--body-size, 20px); line-height: 1.35; color: #43290c;
+  }
+  .pline.title-line {
+    font-family: 'La Belle Aurore', cursive;
+    font-size: var(--title-size, 26px); color: #33200a;
+  }
+  .pchar { opacity: 0; filter: blur(3px); transition: opacity 0.3s ease, filter 0.35s ease; }
+  .pchar.on { opacity: 1; filter: blur(0); }
+  #poath {
+    pointer-events: auto; background: none; border: none; cursor: pointer;
+    font-family: 'La Belle Aurore', cursive;
+    font-size: var(--oath-size, 22px); line-height: 1.4; color: #6a4416;
+    opacity: 0; transition: opacity 1.6s ease, text-shadow 0.3s ease, color 0.3s;
+    margin-top: 1vh;
+  }
+  #poath.on { opacity: 1; }
+  #poath:not(.on) { pointer-events: none; }
+  #poath:hover { color: #2c1a06; text-shadow: 0 0 16px rgba(150, 100, 30, 0.6); }
+
+  #hint {
+    position: fixed; left: 50%; bottom: 5vh; transform: translateX(-50%); z-index: 10;
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 14px; color: rgba(205, 185, 138, 0.55);
+    transition: opacity 0.9s ease; pointer-events: none;
+  }
+
+  /* ---- puzzle overlays: parchment cards in the map's ink style ---- */
+  #puzzle-layer[hidden] { display: none; }
+  #puzzle-layer {
+    position: fixed; inset: 0; z-index: 30; background: rgba(8, 5, 2, 0);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 1.0s ease; pointer-events: auto;
+  }
+  #puzzle-layer.is-open { background: rgba(8, 5, 2, 0.55); }
+  #puzzle-card {
+    box-sizing: border-box;
+    position: relative; width: min(720px, 94vw); max-height: 88vh; overflow: auto;
+    background-image: url('assets/parchment.jpg'); background-size: cover;
+    border-radius: 6px; padding: 34px 38px 30px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6), inset 0 0 60px rgba(90, 62, 24, 0.28);
+    transform: translate(var(--rise-x, 0), var(--rise-y, 0)) scale(0.05) rotate(-8deg);
+    opacity: 0;
+    transition: transform 2.6s cubic-bezier(0.55, 0.06, 0.18, 1), opacity 1.2s ease 0.2s;
+    filter: saturate(0.6);
+  }
+  #puzzle-layer.is-open #puzzle-card { transform: translate(0, 0) scale(1) rotate(0); opacity: 1; }
+  #puzzle-layer.is-closing-slow { background: rgba(8, 5, 2, 0) !important; transition: background 2.4s ease; }
+  #puzzle-layer.is-closing-slow #puzzle-card {
+    transition: opacity 2.2s ease, transform 2.4s ease, filter 2.4s ease !important;
+    opacity: 0 !important; transform: scale(0.965) !important; filter: saturate(0.6) blur(1.5px); }
+  .pt-going { transition: opacity 1.3s ease; opacity: 0.25; }
+  #puzzle-body { opacity: 0; transition: opacity 1.1s ease; }
+  #puzzle-card.is-ready #puzzle-body { opacity: 1; }
+  #puzzle-close {
+    position: absolute; top: 10px; right: 14px; background: none; border: none;
+    font-size: 26px; color: #6a4e22; cursor: pointer; line-height: 1;
+  }
+  .pz-kicker { font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 13px; letter-spacing: 2px; color: #8a6a34; text-transform: lowercase; }
+  .pz-title { font-family: 'La Belle Aurore', cursive; font-weight: 400;
+    font-size: clamp(24px, 4vw, 34px); color: #3a2408; margin: 4px 0 6px; }
+  .pz-note { font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 15px; color: #5a4020; margin-bottom: 14px; }
+  .pz-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .pz-tile {
+    font-family: 'IM Fell English', serif; font-size: clamp(11px, 1.6vw, 15px);
+    letter-spacing: 0.5px; padding: 14px 4px; cursor: pointer;
+    background: rgba(250, 242, 218, 0.55); color: #43290c;
+    border: 1.5px solid rgba(90, 62, 24, 0.45); border-radius: 5px;
+    transition: all 0.15s ease;
+  }
+  .pz-tile:hover { background: rgba(250, 242, 218, 0.85); }
+  .pz-tile.is-picked { background: #43290c; color: #e8dcc0; border-color: #43290c; }
+  .pz-actions { display: flex; align-items: center; gap: 12px; margin-top: 16px; justify-content: flex-end; }
+  .pz-mistakes { font-family: 'IM Fell English', serif; font-style: italic; font-size: 13px; color: #8a3b2e; margin-right: auto; }
+  .pz-btn {
+    font-family: 'IM Fell English', serif; font-style: italic; font-size: 15px;
+    background: none; border: 1px solid rgba(90, 62, 24, 0.5); color: #5a4020;
+    padding: 8px 22px; border-radius: 18px; cursor: pointer;
+  }
+  .pz-btn-primary { background: #43290c; color: #e8dcc0; border-color: #43290c; }
+  .pz-btn:disabled { opacity: 0.35; cursor: default; }
+  .pz-solved { display: grid; gap: 6px; margin-bottom: 10px; }
+  .pz-group {
+    border: 1.5px solid rgba(90, 62, 24, 0.5); border-radius: 5px; padding: 8px 12px;
+    background: rgba(214, 190, 140, 0.4);
+    font-family: 'IM Fell English', serif; color: #43290c;
+    display: flex; flex-direction: column; gap: 2px; font-size: 14px;
+  }
+  .pz-group strong { letter-spacing: 1px; }
+  @keyframes pz-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+  .pz-shake { animation: pz-shake 0.4s ease; }
+  /* ---- field exam ---- */
+  .fe-row { display: flex; gap: 26px; margin-top: 18px; align-items: flex-start; }
+  .fe-photo { flex: 0 0 46%; display: flex; flex-direction: column; gap: 14px; }
+  .fe-photo img, .fe-photo video {
+    width: 100%; display: block; border: 10px solid #f4ead6;
+    border-bottom-width: 26px; box-shadow: 0 6px 18px rgba(30, 18, 6, 0.45);
+    transform: rotate(-1.6deg); filter: saturate(0.82) sepia(0.12) contrast(0.98);
+  }
+  .fe-photo-two img { border-width: 7px; border-bottom-width: 18px; }
+  .fe-photo-two img:last-child { transform: rotate(1.3deg); }
+  .fe-side { flex: 1; min-width: 0; }
+  .fe-unid { font-family: 'IM Fell English', serif; font-size: 19px;
+    letter-spacing: 0.04em; margin: 0 0 12px; opacity: 0.9; }
+  .fe-count { font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 13px; letter-spacing: 0.08em; opacity: 0.55; margin: 0 0 10px; }
+  .fe-riddle { font-family: 'IM Fell English', serif; font-size: 17px;
+    line-height: 1.55; margin: 0 0 18px; }
+  .fe-answer { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  #fe-input {
+    flex: 1; min-width: 180px; background: transparent;
+    border: none; border-bottom: 1.5px solid rgba(58, 38, 16, 0.55);
+    font-family: 'La Belle Aurore', cursive; font-size: 21px; color: #2c1a08;
+    padding: 4px 6px; outline: none;
+  }
+  #fe-input:focus { border-bottom-color: rgba(58, 38, 16, 0.9); }
+  #fe-input:disabled { opacity: 0.55; }
+  .fe-verdict { font-family: 'IM Fell English', serif; font-size: 14.5px;
+    line-height: 1.5; margin: 14px 0 0; min-height: 22px; }
+  /* steam + stages */
+  .fe-photo { position: relative; }
+  .fe-steam {
+    position: absolute; inset: 0;
+    backdrop-filter: blur(2.5px) saturate(0.7) brightness(1.05);
+    background:
+      radial-gradient(45% 60% at 28% 34%, rgba(238, 233, 222, 0.32), transparent 70%),
+      radial-gradient(55% 50% at 70% 60%, rgba(230, 224, 210, 0.28), transparent 72%),
+      radial-gradient(40% 55% at 50% 85%, rgba(240, 236, 226, 0.24), transparent 70%);
+    background-size: 160% 160%;
+    animation: fe-drift 10s ease-in-out infinite alternate;
+    transition: opacity 2.2s ease, backdrop-filter 2.2s ease;
+    pointer-events: none;
+  }
+  @keyframes fe-drift {
+    from { background-position: 12% 20%; }
+    to { background-position: 80% 70%; }
+  }
+  .fe-steam.is-clearing { opacity: 0; backdrop-filter: blur(0px) saturate(1) brightness(1); }
+  .fe-types { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 4px; }
+  .fe-type:disabled { opacity: 0.35; text-decoration: line-through; }
+  .fe-stage2 { opacity: 0; max-height: 0; overflow: hidden; pointer-events: none;
+    transition: opacity 1.4s ease 0.9s, max-height 0.9s ease 0.6s; }
+  .fe-side.is-cleared .fe-stage2 { opacity: 1; max-height: 340px; pointer-events: auto; }
+  .fe-stage1 { transition: opacity 0.8s ease, max-height 0.9s ease 0.4s; max-height: 300px; }
+  .fe-side.is-cleared .fe-stage1 { opacity: 0; max-height: 0; overflow: hidden; pointer-events: none; }
+  #puzzle-card::-webkit-scrollbar { width: 8px; }
+  #puzzle-card::-webkit-scrollbar-thumb { background: rgba(90, 62, 24, 0.35); border-radius: 4px; }
+  #puzzle-card::-webkit-scrollbar-track { background: transparent; }
+  /* field journal matching board */
+  .fj-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0 14px; }
+  .fj-thumb { position: relative; border: none; padding: 0; cursor: pointer; background: #f4ead6;
+    box-shadow: 0 3px 9px rgba(30,18,6,0.35); border: 5px solid #f4ead6; border-bottom-width: 16px;
+    transform: rotate(-1deg); transition: transform 0.25s ease; }
+  .fj-thumb:nth-child(even) { transform: rotate(1.2deg); }
+  .fj-thumb:hover { transform: rotate(0) scale(1.05); z-index: 2; }
+  .fj-thumb.is-sel { outline: 2px solid rgba(88, 58, 20, 0.75); outline-offset: 2px; transform: rotate(0) scale(1.06); z-index: 2; }
+  .fj-img { width: 100%; height: 56px; object-fit: cover; display: block;
+    filter: saturate(0.82) sepia(0.12); }
+  .fj-veil { position: absolute; inset: 0; backdrop-filter: blur(1.3px) brightness(1.04);
+    background: rgba(238, 233, 222, 0.18); pointer-events: none; }
+  .fj-cover {
+    backdrop-filter: blur(9px) brightness(1.1) saturate(0.4);
+    background:
+      radial-gradient(60% 75% at 30% 35%, rgba(240, 235, 224, 0.85), transparent 75%),
+      radial-gradient(70% 60% at 70% 65%, rgba(233, 227, 214, 0.8), transparent 75%),
+      rgba(238, 233, 222, 0.45);
+    background-size: 170% 170%;
+    animation: fe-drift 9s ease-in-out infinite alternate;
+    transition: opacity 1.2s ease, backdrop-filter 1.2s ease;
+  }
+  .fj-tag { position: absolute; left: 0; right: 0; bottom: -14px; text-align: center;
+    font-family: 'IM Fell English', serif; font-style: italic; font-size: 10.5px; color: #5a3e16; }
+  .fj-thumb.is-done .fj-tag { font-weight: bold; color: #274d22; }
+  .fj-detail { display: flex; gap: 16px; align-items: flex-start; min-height: 128px; margin-bottom: 10px; }
+  .fj-big { position: relative; flex: 0 0 190px; border: 8px solid #f4ead6; border-bottom-width: 20px;
+    box-shadow: 0 5px 14px rgba(30,18,6,0.4); transform: rotate(-1.2deg); }
+  .fj-bigimg { width: 100%; height: 118px; object-fit: cover; display: block; filter: saturate(0.85) sepia(0.1); }
+  .fj-thumb.fj-multi { display: flex; }
+  .fj-thumb.fj-multi .fj-img { width: 50%; }
+  .fj-big.fj-multi { display: flex; gap: 3px; flex-basis: 240px; }
+  .fj-big.fj-multi .fj-bigimg { width: calc(50% - 2px); }
+  .fj-read { flex: 1; min-width: 0; }
+  .fj-read .fe-riddle { font-size: 15.5px; line-height: 1.5; margin: 4px 0 8px; }
+  .fj-hint { font-family: 'IM Fell English', serif; font-style: italic; font-size: 13.5px;
+    opacity: 0.6; margin: 6px 0; }
+  .fj-tray { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fj-label.is-used { opacity: 0.3; text-decoration: line-through; }
+  /* the memory archive (crossword) */
+  #cw-grid {
+    display: grid; grid-template-columns: repeat(19, 1fr); gap: 1.5px;
+    margin: 10px auto 8px; width: min(496px, 100%); outline: none;
+    background: rgba(58, 38, 16, 0.25); border: 1.5px solid rgba(58, 38, 16, 0.45);
+    padding: 1.5px;
+  }
+  .cw-cell, .cw-block { position: relative; aspect-ratio: 1; }
+  .cw-block { background: transparent; }
+  .cw-cell { background: rgba(250, 243, 224, 0.82); cursor: pointer; }
+  .cw-cell i { position: absolute; top: 0; left: 2px; font-size: 8px; font-style: normal;
+    font-family: Georgia, serif; color: #6a4e22; line-height: 1.2; }
+  .cw-cell b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'IM Fell English', serif; font-weight: normal; font-size: 14.5px; color: #2c1a08; }
+  .cw-cell.is-word { background: rgba(233, 218, 180, 0.95); }
+  .cw-cell.is-cur { background: rgba(214, 190, 138, 1); box-shadow: inset 0 0 0 1.5px rgba(88, 58, 20, 0.8); }
+  .cw-cell.is-locked { background: rgba(226, 214, 186, 0.75); }
+  .cw-cell.is-locked b { color: #274d22; }
+  #cw-cluebar { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+  #cw-clue { flex: 1; font-family: 'IM Fell English', serif; font-size: 15px; line-height: 1.4; }
+  .cw-no { font-style: italic; opacity: 0.6; margin-right: 6px; }
+  .cw-hint-text { display: block; font-style: italic; color: #6a4e22; margin-top: 3px; font-size: 13.5px; }
+  /* the damaged howler */
+  .hw-toolbar { display: flex; align-items: center; gap: 16px; margin: 12px 0 8px; flex-wrap: wrap; }
+  .hw-vol { font-family: 'IM Fell English', serif; font-style: italic; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  #hw-scope { width: 100%; height: auto; display: block; border: 2px solid rgba(58, 38, 16, 0.5);
+    border-radius: 4px; box-shadow: inset 0 0 24px rgba(0,0,0,0.6); cursor: crosshair; }
+  .hw-scope-wrap { position: relative; }
+  .hw-dial { position: absolute; left: 0; right: 0; pointer-events: none;
+    border-top: 1px dashed rgba(240, 210, 150, 0.65); border-bottom: 1px dashed rgba(240, 210, 150, 0.65);
+    background: rgba(240, 210, 150, 0.07); }
+  .hw-notchline {
+    position: absolute; left: 0; right: 0; height: 0; pointer-events: none;
+    border-top: 1.5px dashed rgba(200, 80, 50, 0.85);
+    opacity: 0; transition: opacity 0.7s ease;
+  }
+  .hw-notchline.is-live { opacity: 1; transition: opacity 0.15s ease; }
+  .hw-status { min-height: 24px; margin: 8px 0 2px; font-size: 16px !important; }
+  .hw-knobs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; margin-top: 10px; }
+  .hw-knobs label { display: flex; align-items: center; gap: 8px;
+    font-family: 'IM Fell English', serif; font-style: italic; font-size: 13.5px; }
+  .hw-knobs label em { font-size: 11px; opacity: 0.55; white-space: nowrap; }
+  .hw-knobs input { flex: 1; }
+  .hw-knobs output { font-size: 12px; min-width: 58px; text-align: right; opacity: 0.7; }
+  .hw-knobs input[type=range], .hw-vol input[type=range] { accent-color: #58381a; }
+  /* pretext pages */
+  .pt-page { text-align: center; padding: 60px 30px 70px; }
+  .pt-h { font-family: 'La Belle Aurore', cursive; font-size: 40px; font-weight: normal;
+    color: #2c1a08; margin: 0 0 18px; }
+  .pt-body { font-family: 'IM Fell English', serif; font-style: italic; font-size: 16.5px;
+    line-height: 1.6; max-width: 48ch; margin: 0 auto 22px; color: #3a2812; }
+  .pt-ps { font-family: 'La Belle Aurore', cursive; font-size: 19px; line-height: 1.5;
+    color: #58381a; max-width: 44ch; margin: -12px auto 26px; transform: rotate(-0.8deg); }
+  /* the Mirror of Erised */
+  .er-mirror { display: flex; justify-content: center; margin: 4px 0 14px; }
+  .er-photo { position: relative; width: 150px; filter: drop-shadow(0 10px 22px rgba(20, 10, 2, 0.45)); }
+  .er-photo img { width: 100%; aspect-ratio: 272 / 471; object-fit: cover; display: block; }
+  .er-glass { position: absolute; left: 13%; right: 13%; top: 28%; bottom: 13%; overflow: hidden; }
+  .er-text {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'La Belle Aurore', cursive; font-size: 23px; color: rgba(248, 240, 224, 0.92);
+    text-shadow: 0 0 8px rgba(255, 244, 214, 0.55), 0 1px 2px rgba(0,0,0,0.4);
+    transition: opacity 1.8s ease, filter 1.8s ease;
+    text-align: center;
+  }
+  .er-rev { opacity: 0.85; filter: blur(0.5px); }
+  .er-fwd { opacity: 0; filter: blur(7px); }
+  .er-glass.is-shown .er-rev { opacity: 0; filter: blur(7px); }
+  .er-glass.is-shown .er-fwd { opacity: 1; filter: blur(0); }
+  .er-sheen {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.2) 46%, transparent 60%);
+    background-size: 300% 100%;
+    animation: er-sweep 7s ease-in-out infinite;
+  }
+  @keyframes er-sweep { 0% { background-position: 120% 0; } 55% { background-position: -60% 0; } 100% { background-position: -60% 0; } }
+  .pt-wish { font-size: 58px; margin: 40px 0 34px; }
+  .pt-wish-page { padding: 14px 30px 26px; }
+  .pt-wish-line { opacity: 0; transition: opacity 2.4s ease; }
+  .pt-wish-line.is-in { opacity: 1; }
+  .pt-wish-rest > * { opacity: 0; transform: translateY(8px); transition: opacity 1.6s ease, transform 1.6s ease; }
+  .pt-wish-rest.is-in > *:nth-child(1) { opacity: 1; transform: none; }
+  .pt-wish-rest.is-in > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 1.2s; }
+  .pt-wish-rest.is-in > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 2.4s; }
+  .pt-btn { font-size: 15px; padding: 9px 22px; }
+  .pt-incant { display: flex; justify-content: center; margin-top: 6px; }
+  #pt-spell {
+    width: min(340px, 80%); background: transparent; border: none;
+    border-bottom: 1.5px solid rgba(58, 38, 16, 0.5);
+    font-family: 'La Belle Aurore', cursive; font-size: 26px; color: #2c1a08;
+    text-align: center; padding: 4px 8px; outline: none;
+  }
+  #pt-spell:focus { border-bottom-color: rgba(58, 38, 16, 0.9); }
+  #puzzle-body { transition: opacity 1.1s ease; }
+  #puzzle-body.pt-out { opacity: 0 !important; transition: opacity 0.5s ease; }
+  #puzzle-body.pt-slow { transition: opacity 2.6s ease; }
+  #puzzle-body.pt-slow.pt-out { transition: opacity 1.4s ease; }
+  .pt-wish-page .er-mirror { animation: wish-in 2.8s ease both; }
+  @keyframes wish-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .fe-good { color: #274d22; }
+  .fe-bad { color: #6d2214; font-style: italic; }
+  @media (max-width: 760px) { .fe-row { flex-direction: column; } .fe-photo { flex-basis: auto; width: 100%; } }
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="inkwrite">
+  <div id="plines"></div>
+  <button id="poath" type="button">&ldquo;I solemnly swear that I am up to no good.&rdquo;</button>
+</div>
+<p id="hint">tap the parchment</p>
+<script src="https://unpkg.com/pixi.js@7.4.2/dist/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-filters@5.2.1/dist/browser/pixi-filters.min.js"></script>
+<script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+<script id="error-trap">
+window.__errs = [];
+addEventListener('error', (e) => { window.__errs.push(String(e.message || e)); updateTrap(); });
+addEventListener('unhandledrejection', (e) => { window.__errs.push('promise: ' + String(e.reason)); updateTrap(); });
+function updateTrap() {
+  let el = document.querySelector('#errbox');
+  if (!el) { el = document.createElement('div'); el.id = 'errbox'; el.style.display = 'none'; document.body.appendChild(el); }
+  el.textContent = window.__errs.join(' || ');
+}
+</script>
+<script src="js/config.js?v=87"></script>
+<script src="js/ink.js?v=87"></script>
+<script src="js/map-art.js?v=87"></script>
+<script src="js/sound.js?v=87"></script>
+<script src="js/howler-synth.js?v=87"></script>
+<script src="js/puzzles.js?v=87"></script>
+<script src="js/main.js?v=87"></script>
+</body>
+</html>
