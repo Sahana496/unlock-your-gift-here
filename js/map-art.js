@@ -315,11 +315,13 @@ MoM.buildMap = function (ink) {
       labels.addChild(mkLabel('Jenny Lake', 470, 1772, 30));
       // the visitor center: a small hut on the east shore
       const vcx = 706, vcy = 1706;
-      ink.addStroke(W([[vcx - 16, vcy], [vcx + 16, vcy]], 1), { width: 2.2 });
-      ink.addStroke(W([[vcx - 14, vcy], [vcx - 14, vcy - 14], [vcx + 14, vcy - 14], [vcx + 14, vcy]], 1), { width: 2.0 });
-      ink.addStroke(W([[vcx - 18, vcy - 14], [vcx, vcy - 26], [vcx + 18, vcy - 14]], 1), { width: 2.0 });
-      ink.addStroke([[vcx - 3, vcy], [vcx - 3, vcy - 8], [vcx + 3, vcy - 8], [vcx + 3, vcy]], { width: 1.4, alpha: 0.7 });
-      labels.addChild(mkLabel('visitor center', vcx + 14, vcy + 10, 17));
+      ink.addStroke(W([[vcx - 34, vcy], [vcx + 34, vcy]], 1), { width: 2.8 });
+      ink.addStroke(W([[vcx - 30, vcy], [vcx - 30, vcy - 30], [vcx + 30, vcy - 30], [vcx + 30, vcy]], 1), { width: 2.6 });
+      ink.addStroke(W([[vcx - 38, vcy - 30], [vcx, vcy - 54], [vcx + 38, vcy - 30]], 1), { width: 2.6 });
+      ink.addStroke([[vcx - 7, vcy], [vcx - 7, vcy - 18], [vcx + 7, vcy - 18], [vcx + 7, vcy]], { width: 1.8, alpha: 0.7 });
+      ink.addStroke([[vcx - 20, vcy - 38], [vcx - 20, vcy - 25]], { width: 1.5, alpha: 0.6 });
+      ink.addStroke(W([[vcx - 20, vcy - 40], [vcx - 12, vcy - 43], [vcx - 12, vcy - 37], [vcx - 20, vcy - 38]], 0.8), { width: 1.4, alpha: 0.7 });
+      labels.addChild(mkLabel('visitor center', vcx + 4, vcy + 12, 22));
       // Delta Lake: a small tarn high above Jenny, up a long switchback
       ink.addStroke(W([[360, 1688], [330, 1600], [368, 1520], [330, 1430], [400, 1330], [414, 1308]], 2), { width: 2.0, alpha: 0.55 });
       ink.addStroke(W([[388, 1262], [416, 1240], [452, 1244], [472, 1262], [462, 1288], [430, 1298], [398, 1288], [386, 1274], [388, 1262]], 3), { width: 3.2, taper: false });
