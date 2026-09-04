@@ -910,7 +910,7 @@ MoM.puzzles = (() => {
       const tol = Math.max(120, Math.round((FMAX * 10) / r.height));
       if (Math.abs(f - H.PLATFORM_F) > tol) return;
       verdict.className = 'fe-verdict fe-good';
-      verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> Right where it has always been \u2014 hidden between the platforms.';
+      verdict.innerHTML = '<strong>You tuned into Platform 9\u00BE!</strong> A tone belonging to no station, parked exactly three-quarters of the way to nowhere.';
     });
 
     const knob = (id, out, apply, fmt = (v) => `${v} Hz`) => {
@@ -1006,12 +1006,15 @@ MoM.puzzles = (() => {
       const onStation = Math.abs(tune - 6400) < 160;
       const windowOK = bw >= 3100;
       const good = playing && onStation && windowOK && notchOK;
-      if (!platformFired) {
+      {
         const windowOnPlatform = playing && Math.abs(tune - H.PLATFORM_F) <= bw / 2;
-        if (windowOnPlatform) {
+        if (windowOnPlatform && !platformFired) {
           platformFired = true;
           verdict.className = 'fe-verdict fe-good';
-          verdict.innerHTML = '<strong>Platform 9\u00BE.</strong> Right where it has always been \u2014 hidden between the platforms.';
+          verdict.innerHTML = '<strong>You tuned into Platform 9\u00BE!</strong> A tone belonging to no station, parked exactly three-quarters of the way to nowhere.';
+        } else if (!windowOnPlatform && platformFired) {
+          platformFired = false;
+          if (/Platform 9/.test(verdict.textContent)) { verdict.textContent = ''; verdict.className = 'fe-verdict'; }
         }
       }
       if (!eggFired) {

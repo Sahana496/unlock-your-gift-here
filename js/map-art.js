@@ -311,25 +311,21 @@ MoM.buildMap = function (ink) {
     // ==== leg 0: the Tetons ====
     mkMem(({ labels, addAnimal }) => {
       labels.addChild(mkLabel('the Teton Range', 400, 1372, 38));
-      // Jenny Lake: west of the road, at the foot of the peaks
-      ink.addStroke(W([[268, 1478], [318, 1458], [376, 1466], [404, 1496], [392, 1540], [340, 1558], [288, 1548], [258, 1516], [268, 1478]], 4), { width: 3.6, taper: false });
-      ink.addStroke([[288, 1500], [382, 1492]], { width: 1.7, alpha: 0.45 });
-      ink.addStroke([[300, 1524], [370, 1520]], { width: 1.4, alpha: 0.35 });
-      labels.addChild(mkLabel('Jenny Lake', 330, 1572, 30));
-      // the visitor center: a small hut by the east shore
-      const vcx = 448, vcy = 1508;
+      // Jenny Lake: the big water already lying beneath the peaks earns its name
+      labels.addChild(mkLabel('Jenny Lake', 470, 1772, 30));
+      // the visitor center: a small hut on the east shore
+      const vcx = 706, vcy = 1706;
       ink.addStroke(W([[vcx - 16, vcy], [vcx + 16, vcy]], 1), { width: 2.2 });
       ink.addStroke(W([[vcx - 14, vcy], [vcx - 14, vcy - 14], [vcx + 14, vcy - 14], [vcx + 14, vcy]], 1), { width: 2.0 });
       ink.addStroke(W([[vcx - 18, vcy - 14], [vcx, vcy - 26], [vcx + 18, vcy - 14]], 1), { width: 2.0 });
       ink.addStroke([[vcx - 3, vcy], [vcx - 3, vcy - 8], [vcx + 3, vcy - 8], [vcx + 3, vcy]], { width: 1.4, alpha: 0.7 });
-      labels.addChild(mkLabel('visitor center', vcx + 8, vcy + 8, 17));
-      // Delta Lake: the tarn high above Jenny, up a long switchback
-      ink.addStroke(W([[300, 1462], [338, 1408], [302, 1360], [352, 1318], [368, 1300]], 2), { width: 2.0, alpha: 0.55 });
-      ink.addStroke(W([[340, 1250], [400, 1214], [480, 1222], [522, 1258], [500, 1306], [430, 1324], [364, 1306], [334, 1278], [340, 1250]], 4), { width: 3.8, taper: false });
-      ink.addStroke([[368, 1262], [498, 1252]], { width: 1.8, alpha: 0.45 });
-      ink.addStroke([[386, 1286], [478, 1282]], { width: 1.5, alpha: 0.35 });
-      ink.addStroke(W([[468, 1220], [482, 1158], [470, 1100]], 2), { width: 1.8, alpha: 0.5 });
-      labels.addChild(mkLabel('Delta Lake', 470, 1342, 30));
+      labels.addChild(mkLabel('visitor center', vcx + 14, vcy + 10, 17));
+      // Delta Lake: a small tarn high above Jenny, up a long switchback
+      ink.addStroke(W([[360, 1688], [330, 1600], [368, 1520], [330, 1430], [400, 1330], [414, 1308]], 2), { width: 2.0, alpha: 0.55 });
+      ink.addStroke(W([[388, 1262], [416, 1240], [452, 1244], [472, 1262], [462, 1288], [430, 1298], [398, 1288], [386, 1274], [388, 1262]], 3), { width: 3.2, taper: false });
+      ink.addStroke([[400, 1268], [458, 1264]], { width: 1.4, alpha: 0.4 });
+      ink.addStroke(W([[452, 1242], [462, 1196], [454, 1150]], 2), { width: 1.6, alpha: 0.5 });
+      labels.addChild(mkLabel('Delta Lake', 428, 1316, 24));
       // the Snake, sliding south through the valley floor
       ink.addStroke(W([[540, 1836], [700, 1808], [860, 1792], [1010, 1800], [1130, 1836]], 3), { width: 3.4 });
       // Schwabacher Landing: east of the road, a braid with still-water ticks
@@ -353,7 +349,7 @@ MoM.buildMap = function (ink) {
       // Oxbow Bend: the river's lazy loop, just past the crossroads
       ink.addStroke(W([[1190, 1368], [1264, 1392], [1330, 1402], [1388, 1382], [1380, 1350], [1332, 1344], [1318, 1372], [1362, 1388], [1442, 1392], [1520, 1424]], 3), { width: 3.2 });
       labels.addChild(mkLabel('Oxbow Bend', 1318, 1444, 28));
-      forest(230, 1650, 10, 110);
+      forest(180, 1560, 9, 95);
       forest(660, 1420, 9, 100);
       addAnimal('deer', 640, 1700, { range: 40, speed: 0.3 });
       addAnimal('marmot', 560, 1290, { range: 0, speed: 0.55, bob: 6 });
