@@ -171,6 +171,23 @@
   #puzzle-card::-webkit-scrollbar-thumb { background: rgba(90, 62, 24, 0.35); border-radius: 4px; }
   #puzzle-card::-webkit-scrollbar-track { background: transparent; }
   /* field journal matching board */
+  #fj-lightbox {
+    position: fixed; inset: 0; z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(24, 18, 10, 0.88);
+    opacity: 0; transition: opacity 0.45s ease;
+    cursor: zoom-out;
+  }
+  #fj-lightbox.is-in { opacity: 1; }
+  #fj-lightbox img, #fj-lightbox video {
+    max-width: 94vw; max-height: 92vh;
+    border: 10px solid #f0e6cf; border-bottom-width: 26px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    transform: scale(0.94) rotate(-0.5deg); transition: transform 0.45s ease;
+    filter: saturate(0.82) contrast(1.02) sepia(0.12);
+  }
+  #fj-lightbox.is-in img, #fj-lightbox.is-in video { transform: scale(1) rotate(0deg); }
+  .fj-detail img, .fj-detail video { cursor: zoom-in; }
   .fj-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0 14px; }
   .fj-thumb { position: relative; border: none; padding: 0; cursor: pointer; background: #f4ead6;
     box-shadow: 0 3px 9px rgba(30,18,6,0.35); border: 5px solid #f4ead6; border-bottom-width: 16px;
@@ -333,12 +350,12 @@ function updateTrap() {
   el.textContent = window.__errs.join(' || ');
 }
 </script>
-<script src="js/config.js?v=92"></script>
-<script src="js/ink.js?v=92"></script>
-<script src="js/map-art.js?v=92"></script>
-<script src="js/sound.js?v=92"></script>
-<script src="js/howler-synth.js?v=92"></script>
-<script src="js/puzzles.js?v=92"></script>
-<script src="js/main.js?v=92"></script>
+<script src="js/config.js?v=94"></script>
+<script src="js/ink.js?v=94"></script>
+<script src="js/map-art.js?v=94"></script>
+<script src="js/sound.js?v=94"></script>
+<script src="js/howler-synth.js?v=94"></script>
+<script src="js/puzzles.js?v=94"></script>
+<script src="js/main.js?v=94"></script>
 </body>
 </html>

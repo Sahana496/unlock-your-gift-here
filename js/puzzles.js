@@ -337,6 +337,27 @@ MoM.puzzles = (() => {
       });
     }
 
+    // the examining glass: click a photograph to hold it up to the light
+    detail.addEventListener('click', (e) => {
+      const media = e.target.closest('.fj-detail img, .fj-detail video');
+      if (!media) return;
+      const box = document.createElement('div');
+      box.id = 'fj-lightbox';
+      const clone = media.cloneNode(true);
+      clone.removeAttribute('style');
+      clone.removeAttribute('class');
+      clone.removeAttribute('width');
+      clone.removeAttribute('height');
+      if (clone.tagName === 'VIDEO') { clone.muted = true; clone.autoplay = true; clone.loop = true; }
+      box.appendChild(clone);
+      document.body.appendChild(box);
+      requestAnimationFrame(() => box.classList.add('is-in'));
+      box.addEventListener('click', () => {
+        box.classList.remove('is-in');
+        setTimeout(() => box.remove(), 450);
+      });
+    });
+
     function renderDetail() {
       const it = FIELD_ITEMS.find((x) => x.id === selected);
       const done = state.done.includes(it.id);
