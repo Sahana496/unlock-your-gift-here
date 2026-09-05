@@ -543,9 +543,9 @@ MoM.puzzles = (() => {
       <p class="pz-note">Twenty memories from two expeditions, pressed into the grid. True ones set themselves in ink.</p>
       <div id="cw-grid" tabindex="0"></div>
       <div id="cw-cluebar">
-        <button class="pz-btn" id="cw-prev" type="button" aria-label="previous clue">&larr;</button>
+        <button class="pz-btn pz-btn-bare" id="cw-prev" type="button" aria-label="previous clue">&larr;</button>
         <div id="cw-clue"></div>
-        <button class="pz-btn" id="cw-next" type="button" aria-label="next clue">&rarr;</button>
+        <button class="pz-btn pz-btn-bare" id="cw-next" type="button" aria-label="next clue">&rarr;</button>
       </div>
       <div class="pz-actions" style="margin-top:8px">
         <span class="pz-mistakes" id="cw-progress"></span>
@@ -749,7 +749,7 @@ MoM.puzzles = (() => {
       <h2 class="pz-title">The Damaged Howler</h2>
       <p class="pz-note">Somewhere on this band, one station is still broadcasting what it was given thirty years ago. The others are impostors. Tune through them and judge each by what it carries. When you find the one that matters, open the window wide enough to hear it whole \u2014 and bite out the two steady bright lines squatting inside it with the notches. When the letter is heard clearly, the map will know.</p>
       <div class="hw-toolbar">
-        <button class="pz-btn pz-btn-primary" id="hw-play" type="button">\u25B6 play</button>
+        <button class="pz-btn pz-btn-primary" id="hw-play" type="button">listen</button>
         <label class="hw-vol">volume <input type="range" id="hw-vol" min="0" max="60" value="18"></label>
         <button class="pz-btn" id="hw-hint" type="button">consult the Messrs.</button>
         <span class="fe-count" id="hw-readout">0.0 / ${H.DURATION}s \u00B7 0\u2013${FMAX} Hz</span>
@@ -855,7 +855,7 @@ MoM.puzzles = (() => {
         playing = true;
         clearScope(false);
         draw();
-        playBtn.textContent = '\u25A0 stop';
+        playBtn.textContent = 'silence';
       } catch {
         verdict.className = 'fe-verdict fe-bad';
         verdict.textContent = 'The receiver could not start audio in this browser.';
@@ -864,7 +864,7 @@ MoM.puzzles = (() => {
     function stop() {
       if (source) { try { source.stop(); } catch {} source = null; }
       playing = false;
-      playBtn.textContent = '\u25B6 play';
+      playBtn.textContent = 'listen';
       cancelAnimationFrame(rafId);
     }
 
@@ -1074,6 +1074,38 @@ MoM.puzzles = (() => {
     wish: renderWish,
   };
 
-  const api = { open, close, isSolved, markSolved, onSolved: null };
+  // quietly warm the heavy pages while he studies the early ones
+  let prefetched = false;
+  function prefetch() {
+    if (prefetched) return;
+    prefetched = true;
+    const urls = [];
+    const vids = [];
+    FIELD_ITEMS.forEach((it) => it.media.forEach((m) => (it.video ? vids : urls).push(m)));
+    urls.push('assets/erised.png');
+    let i = 0;
+    const next = () => {
+      if (i >= urls.length) { drainVideos(); return; }
+      const img = new Image();
+      img.onload = img.onerror = () => setTimeout(next, 250);
+      img.src = urls[i++];
+    };
+    let videosDrained = false;
+    function drainVideos() {
+      if (videosDrained) return;
+      videosDrained = true;
+      // one at a time, lowest priority: just pull them into the HTTP cache
+      let j = 0;
+      const pull = () => {
+        if (j >= vids.length) return;
+        fetch(vids[j++], { priority: 'low' }).then((r) => r.blob()).catch(() => {}).finally(() => setTimeout(pull, 600));
+      };
+      pull();
+    }
+    // two lanes, politely staggered
+    next(); setTimeout(next, 400);
+  }
+
+  const api = { open, close, isSolved, markSolved, onSolved: null, prefetch };
   return api;
 })();

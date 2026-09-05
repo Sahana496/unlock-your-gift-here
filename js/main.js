@@ -487,6 +487,7 @@ window.MoM = window.MoM || {};
     activeLoc = id;
     // the first place to wake also wakes the snitch
     if (!snitchStarted) { snitchStarted = true; gsap.delayedCall(5, spawnSnitch); }
+    if (MoM.puzzles && MoM.puzzles.prefetch) gsap.delayedCall(3, MoM.puzzles.prefetch);
     clearPulse();
     const m2 = art.markers.getChildByName(id);
     if (!m2) return;
