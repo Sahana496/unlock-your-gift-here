@@ -49,5 +49,3 @@ MoM.INK = 0x4a3620;          // map ink
 MoM.INK_FAINT = 0x8a734f;    // pale ink
 MoM.RED = 0xa02818;          // the one color accent: the envelope
 
-// background music (swap the file to audition: darkling / ossuary / alchemist)
-MoM.MUSIC = 'assets/music/darkling.mp3';
