@@ -509,7 +509,7 @@ MoM.puzzles = (() => {
         clue: 'Japanese airline, an ape, a refusal \u2014 assembled, the crunch we came back for twice (8)',
         hint: 'Assemble JAL + APE + NO.' },
       { id: '13D', number: 13, dir: 'down', row: 6, col: 8, answer: 'SCHOOLHOUSE',
-        clue: 'Every stone smooth as an egg \u2014 and $250 apiece if one follows you home (11)',
+        clue: 'Where we walked on ten thousand years of polishing \u2014 $250 apiece if a stone follows you home (11)',
         hint: 'The beach is named like a place for lessons.' },
       { id: '14D', number: 14, dir: 'down', row: 7, col: 4, answer: 'BIGDIPPER',
         clue: 'An oversized ladle no kitchen can hold \u2014 best viewed from a peninsula after dark (3,6)',
