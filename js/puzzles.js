@@ -500,7 +500,7 @@ MoM.puzzles = (() => {
         clue: 'Netted mid-ride, pre-seasoned by the lake itself (6)',
         hint: 'A small crustacean that came already salted.' },
       { id: '8D', number: 8, dir: 'down', row: 3, col: 6, answer: 'CARCAMPING',
-        clue: 'A five-star stay at a zero-dollar rate \u2014 your words, not mine (3,7)',
+        clue: 'A five-star stay at a zero-dollar rate (3,7)',
         hint: 'The vehicle was also the hotel.' },
       { id: '11D', number: 11, dir: 'down', row: 5, col: 12, answer: 'PERIWINKLE',
         clue: "There's a wink hidden inside this shade of dawn sky (10)",
