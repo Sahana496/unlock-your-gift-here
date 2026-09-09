@@ -969,11 +969,11 @@ MoM.puzzles = (() => {
       const bw = +el.querySelector('#hw-bw').value;
       const a = +el.querySelector('#hw-n1').value;
       const b = +el.querySelector('#hw-n2').value;
-      const onStation = Math.abs(tune - 6400) < 160;
+      const onStation = Math.abs(tune - 6400) < 260;
       const onDecoy = DECOY_FREQS.some((f) => Math.abs(tune - f) < 200);
       const onWhistle = [5900, 7100].some((f) => Math.abs(tune - f) < 200);
-      const notchOK = (Math.abs(a - 5900) < 90 && Math.abs(b - 7100) < 90) ||
-                      (Math.abs(a - 7100) < 90 && Math.abs(b - 5900) < 90);
+      const notchOK = (Math.abs(a - 5900) < 120 && Math.abs(b - 7100) < 120) ||
+                      (Math.abs(a - 7100) < 120 && Math.abs(b - 5900) < 120);
       let hint;
       if (!playing) {
         hint = 'The Messrs. cannot advise a silent receiver. Press play.';
@@ -1009,9 +1009,9 @@ MoM.puzzles = (() => {
       const bw = +el.querySelector('#hw-bw').value;
       const a = +el.querySelector('#hw-n1').value;
       const b = +el.querySelector('#hw-n2').value;
-      const notchOK = (Math.abs(a - 5900) < 90 && Math.abs(b - 7100) < 90) ||
-                      (Math.abs(a - 7100) < 90 && Math.abs(b - 5900) < 90);
-      const onStation = Math.abs(tune - 6400) < 160;
+      const notchOK = (Math.abs(a - 5900) < 120 && Math.abs(b - 7100) < 120) ||
+                      (Math.abs(a - 7100) < 120 && Math.abs(b - 5900) < 120);
+      const onStation = Math.abs(tune - 6400) < 260;
       const windowOK = bw >= 3100;
       const good = playing && onStation && windowOK && notchOK;
       {
@@ -1039,7 +1039,7 @@ MoM.puzzles = (() => {
       }
       if (good) {
         if (!heldSince) heldSince = Date.now();
-        if (Date.now() - heldSince > 2800) {
+        if (Date.now() - heldSince > 2200) {
           solvedRadio = true;
           clearInterval(listener);
           verdict.className = 'fe-verdict fe-good';

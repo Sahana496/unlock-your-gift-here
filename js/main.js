@@ -499,9 +499,44 @@ window.MoM = window.MoM || {};
       gsap.to(lbl, { alpha: 1, duration: 1.1, yoyo: true, repeat: -1, ease: 'sine.inOut' });
     }
   }
-  const ANIMAL_VOICE = { marmot: 'marmotWhistle', bison: 'bisonSnort', bear: 'bearHuff' };
+  // ---------- wandering the map by hand ----------
+  let dragging = null, dragMoved = false;
   app.view.addEventListener('pointerdown', (e) => {
+    if (introActive || camera.follow) return;
+    dragging = { x: e.clientX, y: e.clientY, camX: camera.x, camY: camera.y };
+    dragMoved = false;
+  });
+  addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - dragging.x, dy = e.clientY - dragging.y;
+    if (Math.hypot(dx, dy) > 6) dragMoved = true;
+    if (!dragMoved) return;
+    gsap.killTweensOf(camera);
+    const t = clampTarget(dragging.camX - dx / camera.zoom, dragging.camY - dy / camera.zoom, camera.zoom);
+    camera.x = t.x; camera.y = t.y;
+  });
+  addEventListener('pointerup', () => { dragging = null; });
+  app.view.addEventListener('wheel', (e) => {
+    if (introActive || camera.follow) return;
+    e.preventDefault();
+    gsap.killTweensOf(camera);
+    const factor = Math.exp(-e.deltaY * 0.0016);
+    const minZ = coverZoom() / 1.02, maxZ = coverZoom() * 2.2;
+    const nz = Math.max(minZ, Math.min(maxZ, camera.zoom * factor));
+    // zoom toward the cursor
+    const sw = app.renderer.width / app.renderer.resolution;
+    const sh = app.renderer.height / app.renderer.resolution;
+    const wx = camera.x + (e.clientX - sw / 2) / camera.zoom;
+    const wy = camera.y + (e.clientY - sh / 2) / camera.zoom;
+    camera.zoom = nz;
+    const t = clampTarget(wx - (e.clientX - sw / 2) / nz, wy - (e.clientY - sh / 2) / nz, nz);
+    camera.x = t.x; camera.y = t.y;
+  }, { passive: false });
+
+  const ANIMAL_VOICE = { marmot: 'marmotWhistle', bison: 'bisonSnort', bear: 'bearHuff' };
+  app.view.addEventListener('pointerup', (e) => {
     if (introActive) return;
+    if (dragMoved) return; // a pan, not a tap
     // the creatures answer if you bother them
     for (const an of memAnims) {
       const [ax, ay] = worldToScreen(an.g.x, an.g.y);
@@ -530,7 +565,7 @@ window.MoM = window.MoM || {};
     if (best) {
       gsap.to(camera, {
         x: best.l.x, y: best.l.y,
-        zoom: Math.min(camera.zoom * 1.14, coverZoom() * 1.7),
+        zoom: Math.max(camera.zoom, coverZoom() * 1.18),
         duration: 2.6, ease: 'power2.inOut',
       });
       MoM.puzzles.open(best.l.id, best.sx, best.sy);
