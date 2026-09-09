@@ -164,9 +164,9 @@ window.MoM = window.MoM || {};
       const t = i / sampleRate;
       let v = 0;
       for (const q of rumble) {
-        v += 0.10 * (0.6 + 0.4 * Math.sin(TWO_PI * q.am * t + q.amPh)) * Math.sin(TWO_PI * q.f * t + q.ph);
+        v += 0.05 * (0.6 + 0.4 * Math.sin(TWO_PI * q.am * t + q.amPh)) * Math.sin(TWO_PI * q.f * t + q.ph);
       }
-      v += 0.030 * (rnd() * 2 - 1);        // static
+      v += 0.007 * (rnd() * 2 - 1);        // a whisper of static
       v += 0.012 * Math.sin(wG * i);       // platform 9¾
       out[i] += v;
     }
