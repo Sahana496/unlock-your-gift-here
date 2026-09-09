@@ -749,6 +749,7 @@ MoM.puzzles = (() => {
         <button class="pz-btn pz-btn-primary" id="hw-play" type="button">listen</button>
         <label class="hw-vol">volume <input type="range" id="hw-vol" min="0" max="60" value="18"></label>
         <button class="pz-btn" id="hw-hint" type="button">consult the Messrs.</button>
+        <span class="hw-fid" title="fidelity"><i id="hw-fid-bar"></i></span>
         <span class="fe-count" id="hw-readout">0.0 / ${H.DURATION}s \u00B7 0\u2013${FMAX} Hz</span>
       </div>
       <div class="hw-scope-wrap">
@@ -966,7 +967,7 @@ MoM.puzzles = (() => {
       const bw = +el.querySelector('#hw-bw').value;
       const a = +el.querySelector('#hw-n1').value;
       const b = +el.querySelector('#hw-n2').value;
-      const onStation = Math.abs(tune - 6400) < 260;
+      const onStation = Math.abs(tune - 6400) < 300;
       const onDecoy = DECOY_FREQS.some((f) => Math.abs(tune - f) < 200);
       const onWhistle = [5900, 7100].some((f) => Math.abs(tune - f) < 200);
       const notchOK = (Math.abs(a - 5900) < 120 && Math.abs(b - 7100) < 120) ||
@@ -1008,9 +1009,19 @@ MoM.puzzles = (() => {
       const b = +el.querySelector('#hw-n2').value;
       const notchOK = (Math.abs(a - 5900) < 120 && Math.abs(b - 7100) < 120) ||
                       (Math.abs(a - 7100) < 120 && Math.abs(b - 5900) < 120);
-      const onStation = Math.abs(tune - 6400) < 260;
+      const onStation = Math.abs(tune - 6400) < 300;
       const windowOK = bw >= 3100;
       const good = playing && onStation && windowOK && notchOK;
+      // the fidelity needle: the receiver showing its own mind
+      const n1hit = Math.abs(a - 5900) < 120 || Math.abs(a - 7100) < 120;
+      const n2hit = (Math.abs(b - 5900) < 120 || Math.abs(b - 7100) < 120) &&
+                    !(Math.abs(a - b) < 240); // both knobs on the same line only counts once
+      const fid = !playing ? 0 :
+        (onStation ? 0.4 : Math.max(0, 0.4 - Math.abs(tune - 6400) / 4000)) +
+        (windowOK ? 0.3 : Math.min(0.3, (bw / 3100) * 0.3)) +
+        (n1hit ? 0.15 : 0) + (n2hit ? 0.15 : 0);
+      const fb = el.querySelector('#hw-fid-bar');
+      if (fb) fb.style.width = Math.round(Math.min(1, fid) * 100) + '%';
       {
         const windowOnPlatform = playing && Math.abs(tune - H.PLATFORM_F) <= bw / 2;
         if (windowOnPlatform && !platformFired) {
