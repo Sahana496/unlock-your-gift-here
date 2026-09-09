@@ -938,12 +938,17 @@ MoM.puzzles = (() => {
     function paintDial() {
       const f = +el.querySelector('#hw-tune').value;
       const bw = +el.querySelector('#hw-bw').value;
-      const top = 100 * (1 - Math.min(FMAX, f + bw / 2) / FMAX);
-      const bot = 100 * (1 - Math.max(0, f - bw / 2) / FMAX);
-      dial.style.top = top + '%';
-      dial.style.height = Math.max(1.5, bot - top) + '%';
-      nl1.style.top = (100 * (1 - (+el.querySelector('#hw-n1').value) / FMAX)) + '%';
-      nl2.style.top = (100 * (1 - (+el.querySelector('#hw-n2').value) / FMAX)) + '%';
+      const y = (fr) => cv.offsetTop + 2 + (1 - fr / FMAX) * cv.clientHeight;
+      const top = y(Math.min(FMAX, f + bw / 2));
+      const bot = y(Math.max(0, f - bw / 2));
+      dial.style.top = top + 'px';
+      dial.style.height = Math.max(4, bot - top) + 'px';
+      const place = (elm, f) => {
+        // anchored to the canvas itself: its offset within the wrap plus its border
+        elm.style.top = (cv.offsetTop + 2 + (1 - f / FMAX) * cv.clientHeight) + 'px';
+      };
+      place(nl1, +el.querySelector('#hw-n1').value);
+      place(nl2, +el.querySelector('#hw-n2').value);
     }
     for (const id of ['hw-tune', 'hw-bw', 'hw-n1', 'hw-n2']) {
       el.querySelector('#' + id).addEventListener('input', paintDial);
