@@ -261,7 +261,7 @@ MoM.puzzles = (() => {
   // ---------- Field Exam: "The Steaming Basin" ----------
   const FIELD_ITEMS = [
     { id: 'celestine', basin: 'LOWER BASIN', ftype: ['HOT SPRING'], media: ['assets/geysers/img_9967.jpg'],
-      riddle: 'The sky seems to have fallen into this pool. Its name comes from a Latin root meaning \u201Cheavenly\u201D and is shared with a pale-blue mineral \u2014 one that ends the way serpentine does.',
+      riddle: 'The sky seems to have fallen into this pool. Its name comes from a Latin root meaning \u201Cheavenly\u201D and is shared with a pale-blue mineral that ends the way pristine does.',
       accept: ['CELESTINE'], answer: 'Celestine Pool',
       note: 'About 183\u00B0F, pH 8.3. When nearby Silex Spring showed geyser activity, Celestine stirred too \u2014 neighbors answering the same subsurface change.' },
     { id: 'paintpots', basin: 'LOWER BASIN', ftype: ['MUDPOT'], media: ['assets/geysers/mudpots.mov'], video: true,
