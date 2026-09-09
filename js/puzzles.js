@@ -638,12 +638,9 @@ MoM.puzzles = (() => {
       curCell = cells[j];
     }
     function advance() {
-      // after typing: hop to the next EMPTY cell of the word (crossings skip themselves)
+      // after typing: simply the next square of the word — typing overwrites crossings
       const cells = cellsOf(cur);
       const i = cells.findIndex((p) => p.r === curCell.r && p.c === curCell.c);
-      for (let j = i + 1; j < cells.length; j++) {
-        if (!state.letters[key(cells[j].r, cells[j].c)]) { curCell = cells[j]; return; }
-      }
       if (i < cells.length - 1) curCell = cells[i + 1];
     }
     function nextEntry(step) {
