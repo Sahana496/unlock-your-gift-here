@@ -1061,8 +1061,8 @@ MoM.puzzles = (() => {
             stop();
             try { ctx && ctx.close(); } catch {}
             ctx = null;
-            swapBody(renderWish, true);
-          }, 4600);
+            swapBody(renderWish);
+          }, 1500);
         }
       } else heldSince = 0;
     }, 400);
