@@ -14,6 +14,10 @@ window.MoM = window.MoM || {};
   const OUT = (W - FACE_W - 2 * HALF) / 2; // narrow outer flap (wave 2)
   const FOLIO_L = CX - HALF;
   const FOLIO_R = CX + HALF;
+  if (new URLSearchParams(location.search).has('reset')) {
+    localStorage.removeItem('map-of-misadventures-v1');
+    history.replaceState(null, '', location.pathname);
+  }
   const AUTO = new URLSearchParams(location.search).get('auto') || '';
 
   const withTimeout = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
